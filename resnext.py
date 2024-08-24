@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,14 +7,19 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader, Subset
 from torchvision.models import resnext50_32x4d, ResNeXt50_32X4D_Weights
 
+from dotenv import load_dotenv
+load_dotenv()
+
+PATH_TO_PLANTNET_300K = os.environ.get('PATH_TO_PLANTNET_300K')
+
 def main():
     selected_classes = ['1355868', '1355920', '1355932'] 
     
     transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
+        transforms.RandomHorizontalFlip(), #czemu to flipujemy? nie zwiekszy to ilosci zdjec jakie mamy? a i tak mamy bardzo duzo?
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     def filter_dataset(dataset, classes):
@@ -21,9 +27,8 @@ def main():
         filtered_indices = [i for i, (_, label) in enumerate(dataset) if label in class_indices]
         return Subset(dataset, filtered_indices)
 
-
-    train_dataset = ImageFolder(root=r'G:/inzynierka-pliki/plantnet_300K/plantnet_300K/images/train_temp', transform=transform)
-    test_dataset = ImageFolder(root=r'G:/inzynierka-pliki/plantnet_300K/plantnet_300K/images/test_temp', transform=transform)
+    train_dataset = ImageFolder(root=os.path.join(PATH_TO_PLANTNET_300K, 'images/train'), transform=transform)
+    test_dataset = ImageFolder(root=os.path.join(PATH_TO_PLANTNET_300K, 'images/test'), transform=transform)
 
     filtered_train_dataset = filter_dataset(train_dataset, selected_classes)
     filtered_test_dataset = filter_dataset(test_dataset, selected_classes)
