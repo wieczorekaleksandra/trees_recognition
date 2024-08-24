@@ -17,7 +17,6 @@ def main():
     
     transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(), #czemu to flipujemy? nie zwiekszy to ilosci zdjec jakie mamy? a i tak mamy bardzo duzo?
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])

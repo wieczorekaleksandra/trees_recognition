@@ -7,15 +7,19 @@ load_dotenv()
 
 PATH_TO_PLANTNET_300K = os.environ.get('PATH_TO_PLANTNET_300K')
 image_dir = os.path.join(PATH_TO_PLANTNET_300K, 'images/train')
-selected_classes = ['1356111', '1355868']
 
 hashes = {}
 duplicates = []
 
-def find_duplicates(image_dir, selected_classes):
-    for selected_class in selected_classes:
-        class_dir = os.path.join(image_dir, selected_class) 
-        print(f"Checking duplicates in class: {selected_class}")
+def find_duplicates(image_dir):
+    # Loop through all directories in the train directory
+    for selected_class in os.listdir(image_dir):
+        class_dir = os.path.join(image_dir, selected_class)
+        if not os.path.isdir(class_dir):
+            continue  # Skip if it's not a directory
+
+        file_count = len([name for name in os.listdir(class_dir) if name.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif'))])
+        print(f"Number of files in {selected_class} directory: {file_count}")
 
         for filename in os.listdir(class_dir):
             if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
@@ -28,23 +32,36 @@ def find_duplicates(image_dir, selected_classes):
                     continue
 
                 if img_hash in hashes:
-                    duplicates.append((filename, hashes[img_hash], selected_class))
-                    print(f"Duplicate found in class {selected_class}: {filename} is a duplicate of {hashes[img_hash]}")
+                    duplicates.append((filename, hashes[img_hash], selected_class, file_count))
 
-                    print(f"Opening original image: {hashes[img_hash]}")
-                    Image.open(os.path.join(class_dir, hashes[img_hash])).show()
-
-                    print(f"Opening duplicate image: {filename}")
-                    Image.open(filepath).show()
+                    #Image.open(os.path.join(class_dir, hashes[img_hash])).show()
+                    #Image.open(filepath).show()
                 else:
                     hashes[img_hash] = filename
 
-find_duplicates(image_dir, selected_classes)
- 
+find_duplicates(image_dir)
 
 if duplicates:
+    print(f"Total number of duplicates found: {len(duplicates)}")
     print("Found duplicates:")
     for dup in duplicates:
-        print(f"Duplicate in class {dup[2]}: {dup[0]} - Original: {dup[1]}")
+        if dup[3] > 200:
+            print(f"Duplicate in class {dup[2]}: {dup[0]} - Original: {dup[1]} - Deleting duplicate")
+            # duplicate_path = os.path.join(image_dir, dup[2], dup[0])
+            # try:
+            #     os.remove(duplicate_path)
+            #     print(f"Deleted duplicate file: {dup[0]}")
+            # except Exception as e:
+            #     print(f"Error deleting {dup[0]}: {e}")
+        else:
+            print(f"Duplicate in class {dup[2]}: {dup[0]} - Original: {dup[1]} - Flipping duplicate vertically")
+            # duplicate_path = os.path.join(image_dir, dup[2], dup[0])
+            # try:
+            #     img = Image.open(duplicate_path)
+            #     img = img.transpose(Image.FLIP_TOP_BOTTOM)
+            #     img.save(duplicate_path)
+            #     print(f"Flipped and saved duplicate file: {dup[0]}")
+            # except Exception as e:
+            #     print(f"Error flipping {dup[0]}: {e}")
 else:
     print("No duplicates found.")
