@@ -9,6 +9,8 @@ load_dotenv()
 PATH_TO_PLANTNET_300K = os.environ.get('PATH_TO_PLANTNET_300K')
 image_dir_train = os.path.join(PATH_TO_PLANTNET_300K, 'images/train')
 image_dir_test = os.path.join(PATH_TO_PLANTNET_300K, 'images/test')
+image_dir_val = os.path.join(PATH_TO_PLANTNET_300K, 'images/val')
+
 
 
 hashes = {}
@@ -16,29 +18,31 @@ duplicates = []
 
 def find_duplicates(image_dir_train):
     dir_number = 0
-    # Loop through all directories in the train directory
-    for selected_class in os.listdir(image_dir_train):
-        class_dir = os.path.join(image_dir_train, selected_class)
-        class_dir_test = os.path.join(image_dir_test, selected_class)
 
-        if not os.path.isdir(class_dir):
-            continue  # Skip if it's not a directory
+    for selected_class in os.listdir(image_dir_train):
+        class_dir_train = os.path.join(image_dir_train, selected_class)
+        class_dir_test = os.path.join(image_dir_test, selected_class)
+        class_dir_val = os.path.join(image_dir_val, selected_class)
+
+        if not os.path.isdir(class_dir_train):
+            continue  
         
-        file_count = len([name for name in os.listdir(class_dir) if name.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif'))])
+        file_count = len([name for name in os.listdir(class_dir_train) if name.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif'))])
         print(f"Number of files in directory {selected_class} : {file_count}")
         if file_count < 200: 
             try:
+                shutil.rmtree(class_dir_train)
                 shutil.rmtree(class_dir_test)
-                shutil.rmtree(class_dir)
+                shutil.rmtree(class_dir_val)
                 print(f"Deleted directory: {selected_class}")
             except Exception as e:
                 print(f"Error deleting directory {selected_class}: {e}")
             continue 
 
         dir_number += 1
-        for filename in os.listdir(class_dir):
+        for filename in os.listdir(class_dir_train):
             if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-                filepath = os.path.join(class_dir, filename)
+                filepath = os.path.join(class_dir_train, filename)
                 try:
                     img = Image.open(filepath)
                     img_hash = imagehash.phash(img) 

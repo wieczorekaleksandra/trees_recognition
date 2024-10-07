@@ -7,6 +7,12 @@ from torch.utils.data import DataLoader, Subset
 import numpy as np
 from torchvision.models import resnet18, ResNet18_Weights
 
+
+from dotenv import load_dotenv
+load_dotenv()
+
+PATH_TO_PLANTNET_300K = os.environ.get('PATH_TO_PLANTNET_300K')
+
 def main():
     # Define the subset of classes to use
     selected_classes = ['1355868', '1355920', '1355932']  # Replace with your class names
@@ -24,8 +30,8 @@ def main():
         filtered_indices = [i for i, (_, label) in enumerate(dataset) if label in class_indices]
         return Subset(dataset, filtered_indices)
 
-    train_dataset = ImageFolder(root=r'G:/inzynierka-pliki/plantnet_300K/plantnet_300K/images/train_temp', transform=transform)
-    test_dataset = ImageFolder(root=r'G:/inzynierka-pliki/plantnet_300K/plantnet_300K/images/test_temp', transform=transform)
+    train_dataset = ImageFolder(root=os.path.join(PATH_TO_PLANTNET_300K, 'images/train'), transform=transform)
+    test_dataset = ImageFolder(root=os.path.join(PATH_TO_PLANTNET_300K, 'images/test'), transform=transform)
 
     filtered_train_dataset = filter_dataset(train_dataset, selected_classes)
     filtered_test_dataset = filter_dataset(test_dataset, selected_classes)
