@@ -11,10 +11,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from torchvision.models import resnet18, ResNet18_Weights
+
 from dotenv import load_dotenv
 load_dotenv()
 
-
+PATH_TO_PLANTNET_300K = os.environ.get('PATH_TO_PLANTNET_300K')
 
 # how to use train_and_evaluate function will return:
 # confusion_matrix
@@ -23,8 +24,6 @@ load_dotenv()
 # top_5_worst_recall
 # overall_accuracy - structure with 
 # report ( where there is fl-score and so on)
-
-PATH_TO_PLANTNET_300K = 'G:/inzynierka-pliki/plantnet_300K/plantnet_300K/images'
 
 def get_class_names(train_path):
     return next(os.walk(train_path))[1]
@@ -62,7 +61,7 @@ def evaluate_model_per_epoch(model, test_loader, selected_classes, device, epoch
         "overall_accuracy": overall_accuracy,
     }
 
-def train_and_evaluate( gamma=0.1,step_size=7,weight_decay=5e-4,momentum=0.9,lr=0.001,num_epochs=10,batch_size=16, num_classes=3):
+def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9, lr=0.001, num_epochs=10, batch_size=16, num_classes=3):
 
     transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -126,14 +125,14 @@ def train_and_evaluate( gamma=0.1,step_size=7,weight_decay=5e-4,momentum=0.9,lr=
     return metrics_per_epoch
 
 def main():
-    metrics = train_and_evaluate(num_epochs=2)
+    metrics = train_and_evaluate(num_epochs=2, num_classes=10)
 
     for epoch_data in metrics:
         print(f"\nEpoch {epoch_data['epoch']} Metrics:")
         print(f"Loss: {epoch_data['loss']:.4f}")
         print(f"Overall Accuracy: {epoch_data['overall_accuracy']:.2f}%")
         print(f"Confusion Matrix:\n{epoch_data['confusion_matrix']}")
-        print(f'report {epoch_data['classification_report']}')
+        print(f"report {epoch_data['classification_report']}")
         print("Top 5 classes with the best recall:")
         for cls, recall in epoch_data['top_5_best_recall']:
             print(f"Class {cls}: {recall:.2f}")
