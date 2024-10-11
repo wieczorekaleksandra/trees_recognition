@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import pickle
 from torchvision.models import resnet18, ResNet18_Weights
 
 from dotenv import load_dotenv
@@ -61,7 +61,7 @@ def evaluate_model_per_epoch(model, test_loader, selected_classes, device, epoch
         "overall_accuracy": overall_accuracy,
     }
 
-def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9, lr=0.001, num_epochs=10, batch_size=16, num_classes=3):
+def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9, lr=0.001, num_epochs=10, batch_size=16):
 
     transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
@@ -70,13 +70,9 @@ def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9,
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-    def filter_dataset(dataset, classes):
-        class_indices = [dataset.class_to_idx[cls] for cls in classes]
-        filtered_indices = [i for i, (_, label) in enumerate(dataset) if label in class_indices]
-        return Subset(dataset, filtered_indices)
 
-    train_path = f'{PATH_TO_PLANTNET_300K}/train_temp'
-    test_path = f'{PATH_TO_PLANTNET_300K}/test_temp'
+    train_path = f'{PATH_TO_PLANTNET_300K}/train'
+    test_path = f'{PATH_TO_PLANTNET_300K}/test'
 
     train_dataset = ImageFolder(root=train_path, transform=transform)
     test_dataset = ImageFolder(root=test_path, transform=transform)
@@ -85,9 +81,14 @@ def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9,
     test_loader = DataLoader(test_dataset ,  batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     selected_classes = next(os.walk(train_path))[1]
+    num_classes = len(selected_classes)
 
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
     model.fc = nn.Linear(model.fc.in_features, num_classes)
+    if torch.cuda.is_available():
+        print("leci na karcie")
+    else:
+        print("leci na cpu")
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -121,11 +122,12 @@ def train_and_evaluate( gamma=0.1, step_size=7, weight_decay=5e-4, momentum=0.9,
         epoch_metrics["loss"] = running_loss / len(train_loader)
 
         metrics_per_epoch.append(epoch_metrics)
-
+        torch.save(model.state_dict(), f'trained_model{epoch}.pth')
+        print("Model saved to 'trained_model.pth'")
     return metrics_per_epoch
 
 def main():
-    metrics = train_and_evaluate(num_epochs=2, num_classes=10)
+    metrics = train_and_evaluate(num_epochs=4)
 
     for epoch_data in metrics:
         print(f"\nEpoch {epoch_data['epoch']} Metrics:")
@@ -140,6 +142,8 @@ def main():
         print("\nTop 5 classes with the worst recall:")
         for cls, recall in epoch_data['top_5_worst_recall']:
             print(f"Class {cls}: {recall:.2f}")
+    with open('metrics_data.pkl','wb') as handle:
+        pickle.dump(metrics,handle)
 
 if __name__ == '__main__':
     main()
