@@ -1,0 +1,5 @@
+open-images-dataset/
+open-images-dataset-csv/
+myenv/
+yolo11n.pt
+yolov8n.pt

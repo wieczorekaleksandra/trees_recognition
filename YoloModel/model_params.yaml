@@ -1,0 +1,18 @@
+# root path to your dataset
+path: G:\Repo-inzynier\trees_recognition\YoloModel\open-images-dataset  
+
+# train images folder
+train: 
+  - plant/images/train  # plant images for training
+  - tree/images/train   # tree images for training
+
+# validation images folder
+val: 
+  - plant/images/val   # plant images for validation
+  - tree/images/val    # tree images for validation
+
+# number of classes
+nc: 2  
+
+# list of class names
+names: ['plant', 'tree']  
