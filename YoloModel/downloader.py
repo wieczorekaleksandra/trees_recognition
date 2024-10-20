@@ -5,7 +5,7 @@ def main():
     download_dataset(
     class_labels=['Tree', 'Plant'],
     annotation_format='darknet',  
-    limit=1000,
+    limit=10000,
     dest_dir='open-images-dataset',
     csv_dir='open-images-dataset-csv'
     )

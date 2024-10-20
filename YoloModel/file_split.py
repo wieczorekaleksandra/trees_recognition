@@ -3,7 +3,7 @@ import random
 import shutil
 
 # Paths
-dataset_path = 'G:/Repo-inzynier/trees_recognition/YoloModel/open-images-dataset/tree'
+dataset_path = 'G:/Repo-inzynier/trees_recognition/YoloModel/open-images-dataset/plant'
 images_path = os.path.join(dataset_path, 'images')
 labels_path = os.path.join(dataset_path, 'darknet')
 
