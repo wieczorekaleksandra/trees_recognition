@@ -18,9 +18,8 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-def load_image(image_path):
-    image = Image.open(image_path)
-    image = transform(image).unsqueeze(0)  # Add batch dimension
+def load_image(image):
+    image = transform(image).unsqueeze(0)
     return image
 
 def predict_image(model, image_tensor, device, selected_classes):
@@ -38,13 +37,11 @@ def predict_image(model, image_tensor, device, selected_classes):
     print(f'Predicted class (number from the used classes): {predicted_class}, Certainty: {certainty:.4f}')
     return predicted_class, certainty
 
-if __name__ == '__main__':
-    model_path = "trained_model3.pth"
-    image_path = "YoloModel/image.png"
-    
+def use_resnet_model_predict(image):
+    model_path = "../trained_model3.pth"
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_model(model_path,193)
-    image_tensor = load_image(image_path)
+    image_tensor = load_image(image)
     predicted_class = predict_image(model, image_tensor, device, 10)
-    
     print(f'Predicted class: {predicted_class}')
+    return predicted_class
