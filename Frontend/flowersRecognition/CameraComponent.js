@@ -13,8 +13,8 @@ export default function CameraComponent() {
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      console.log(photo);
+      const photo = await cameraRef.current.takePictureAsync({base64:true});
+      console.log(photo.base64);
     }
   };
 
