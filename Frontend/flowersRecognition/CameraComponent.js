@@ -15,8 +15,30 @@ export default function CameraComponent() {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync({base64:true});
       console.log(photo.base64);
+      handleImageUpload(photo.base64)
     }
   };
+
+  const handleImageUpload = async (base64Image) => {
+    try {
+      const response = await fetch('YOUR_BACKEND_URL', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: base64Image }),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Image uploaded successfully:', result);
+      } else {
+        console.error('Image upload failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+  
 
   if (!permission.granted) {
     return (
