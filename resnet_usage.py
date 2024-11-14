@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 import os
 import torch.nn.functional as F
+import json
 
 def load_model(model_path, num_classes):
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
@@ -38,10 +39,14 @@ def predict_image(model, image_tensor, device, selected_classes):
     return predicted_class, certainty
 
 def use_resnet_model_predict(image):
-    model_path = "../trained_model3.pth"
+    model_path = "trained_model3.pth"
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_model(model_path,193)
     image_tensor = load_image(image)
     predicted_class = predict_image(model, image_tensor, device, 10)
-    print(f'Predicted class: {predicted_class}')
-    return predicted_class
+    with open("json_plants.json", 'r') as f:
+        class_to_species = json.load(f)
+    print(predicted_class)
+    species_name = class_to_species[str(predicted_class[0])]
+    print(f'Predicted class: {species_name[0]}')
+    return predicted_class[1],species_name[0]

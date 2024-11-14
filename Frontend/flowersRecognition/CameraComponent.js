@@ -14,14 +14,13 @@ export default function CameraComponent() {
   const takePicture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync({base64:true});
-      console.log(photo.base64);
       handleImageUpload(photo.base64)
     }
   };
 
   const handleImageUpload = async (base64Image) => {
     try {
-      const response = await fetch('YOUR_BACKEND_URL', {
+      const response = await fetch('http://192.168.8.103:5000/upload-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
