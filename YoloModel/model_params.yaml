@@ -3,8 +3,8 @@ path: G:\Repo-inzynier\trees_recognition\YoloModel\open-images-dataset
 
 # train images folder
 train: 
-  - plant/images/train  # plant images for training
-  - tree/images/train   # tree images for training
+  - plant/images/train  
+  - tree/images/train   
 
 # validation images folder
 val: 
@@ -15,4 +15,4 @@ val:
 nc: 2  
 
 # list of class names
-names: ['plant', 'tree']  
+names: ['tree', 'plant']  
