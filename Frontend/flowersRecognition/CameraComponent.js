@@ -1,11 +1,14 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
 
 export default function CameraComponent() {
   const {facing, setFacing} = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [flowerDict, setFlowerDict] = useState({});
 
   if (!permission) {
     return <View />;
@@ -29,7 +32,15 @@ export default function CameraComponent() {
       });
       if (response.ok) {
         const result = await response.json();
-        console.log('Image uploaded successfully:', result);
+        // Extract confidence and name from response
+        const recognized = result['recognized'][0];
+        const confidence = recognized[0];
+        const name = recognized[1];
+
+        // Update flowerDict with the new entry
+        const newFlowerDict = { ...flowerDict, [name]: confidence };
+        setFlowerDict(newFlowerDict);
+        setModalVisible(true); 
       } else {
         console.error('Image upload failed:', response.statusText);
       }
@@ -49,21 +60,44 @@ export default function CameraComponent() {
   }
 
   return (
-    <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={takePicture}
-          style={styles.captureButton}
-        />
-      </View>
-    </CameraView>
+    <View style={styles.container}>
+      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={takePicture} style={styles.captureButton} />
+        </View>
+      </CameraView>
+      
+      <Modal
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>Response Data</Text>
+
+      {/* Loop through flowerDict and display each flower with its confidence */}
+      {Object.entries(flowerDict).map(([name, confidence], index) => (
+        <View key={index} style={styles.resultItem}>
+          <Text style={styles.resultText}>Flower: {name}</Text>
+          <Text style={styles.resultText}>Confidence: {confidence}</Text>
+        </View>
+      ))}
+
+      <Button title="Close" onPress={() => {setModalVisible(false)
+        setFlowerDict({})
+      }} />
+    </View>
+  </View>
+</Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
   },
   message: {
     textAlign: 'center',
@@ -76,22 +110,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 30, 
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    paddingBottom: 30,
   },
   captureButton: {
     width: 70,
     height: 70,
     borderRadius: 50,
     backgroundColor: '#fff',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
