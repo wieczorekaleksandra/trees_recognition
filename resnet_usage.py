@@ -47,6 +47,6 @@ def use_resnet_model_predict(image):
     with open("json_plants.json", 'r') as f:
         class_to_species = json.load(f)
     print(predicted_class)
-    species_name = class_to_species[str(predicted_class[0])]
+    species_name = class_to_species[str(predicted_class[0]+1)]
     print(f'Predicted class: {species_name[0]}')
     return predicted_class[1],species_name[0]
