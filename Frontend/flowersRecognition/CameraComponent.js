@@ -1,6 +1,8 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
+import {url} from './Constants'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CameraComponent() {
   const {facing, setFacing} = useState<CameraType>('back');
@@ -23,13 +25,23 @@ export default function CameraComponent() {
 
   const handleImageUpload = async (base64Image) => {
     try {
-      const response = await fetch('http://192.168.8.103:5000/upload-image', {
+      // Retrieve the JWT token from AsyncStorage
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) {
+        Alert.alert('Error', 'Please log in first');
+        return;
+      }
+
+      // Send the image with the token in the headers
+      const response = await fetch(`${url}/upload-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Include the token in the header
         },
         body: JSON.stringify({ image: base64Image }),
       });
+
       if (response.ok) {
         const result = await response.json();
         // Extract confidence and name from response
@@ -40,7 +52,7 @@ export default function CameraComponent() {
         // Update flowerDict with the new entry
         const newFlowerDict = { ...flowerDict, [name]: confidence };
         setFlowerDict(newFlowerDict);
-        setModalVisible(true); 
+        setModalVisible(true);
       } else {
         console.error('Image upload failed:', response.statusText);
       }
