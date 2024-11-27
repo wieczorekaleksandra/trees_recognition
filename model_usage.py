@@ -24,4 +24,6 @@ def process_image(input_image):
         detected_plant = use_resnet_model_predict(plant_cropped)
         list_of_detected_plant.append(detected_plant)
         print(f"Plant {i+1} ")
+    if len(trees) == 0:
+        list_of_detected_plant.append(use_resnet_model_predict(input_image))
     return list_of_detected_plant
