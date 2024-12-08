@@ -1,3 +1,4 @@
+import os
 import base64
 import sqlite3
 from flask import Flask, request, jsonify
@@ -9,13 +10,13 @@ from model_usage import process_image
 
 app = Flask(__name__)
 
-# Configuration for JWT
-app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Replace with a secure key
+
+app.config['JWT_SECRET_KEY'] = 'your_secret_key' 
 jwt = JWTManager(app)
 
 DATABASE = 'flowers.db'
+PLANTS_DIR = 'plants'  
 
-# Helper function to connect to the database
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -83,6 +84,39 @@ def upload_image():
 
         print(f"User: {current_user} - Recognized: {recognized}")
         return jsonify({"recognized": recognized}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/plants', methods=['GET'])
+def get_all_plants():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, scientific_name, code FROM plants')
+        plants = cursor.fetchall()
+        conn.close()
+
+        result = []
+        for plant in plants:
+            plant_dict = {
+                "id": plant["id"],
+                "scientific_name": plant["scientific_name"],
+                "code": plant["code"]
+            }
+
+            # Find the image file
+            image_path = os.path.join(PLANTS_DIR, f"{plant['code']}.jpg")
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img_file:
+                    plant_dict["image"] = base64.b64encode(img_file.read()).decode('utf-8')
+            else:
+                plant_dict["image"] = None  # No image available
+
+            result.append(plant_dict)
+
+        return jsonify({"plants": result}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
