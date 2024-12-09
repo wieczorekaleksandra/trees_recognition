@@ -49,4 +49,4 @@ def use_resnet_model_predict(image):
     print(predicted_class)
     species_name = class_to_species[str(predicted_class[0]+1)]
     print(f'Predicted class: {species_name[0]}')
-    return predicted_class[1],species_name[0]
+    return predicted_class[1],species_name[0], species_name[1] # 1 is for Planet 300k id

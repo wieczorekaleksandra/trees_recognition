@@ -1,43 +1,67 @@
-import React, { useState } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, StyleSheet, ActivityIndicator, Alert, Image } from 'react-native';
 import { Text, Button, Card, IconButton } from 'react-native-paper';
+import { url } from './Constants';
 
 export default function Main({ navigation }) {
-  const [favoritePlants, setFavoritePlants] = useState([
-    { id: '1', name: 'Monstera' },
-    { id: '2', name: 'Fiddle Leaf Fig' },
-    { id: '3', name: 'Snake Plant' },
-    { id: '4', name: 'Pothos' },
-  ]);
+  const [favoritePlants, setFavoritePlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchFavoritePlants = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${url}/plants`); 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.plants) {
+        setFavoritePlants(data.plants);
+      } else {
+        setFavoritePlants([]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch favorite plants.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavoritePlants();
+  }, []);
 
   const renderPlant = ({ item }) => (
     <Card style={styles.card}>
       <Card.Title
-        title={item.name}
+        title={item.scientific_name}
         left={(props) => <IconButton {...props} icon="leaf" />}
       />
+      {item.image && (
+        <Image
+          source={{ uri: `data:image/jpeg;base64,${item.image}` }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
     </Card>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Favorite Plants</Text>
-      {favoritePlants.length > 0 ? (
+      <Text style={styles.title}>All of plants recognized by the app</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#4CAF50" />
+      ) : favoritePlants.length > 0 ? (
         <FlatList
           data={favoritePlants}
           renderItem={renderPlant}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
         />
       ) : (
         <Text style={styles.emptyMessage}>You don't have any favorite plants yet.</Text>
       )}
-      <Button
-        mode="contained"
-        style={styles.button}
-        onPress={() => navigation.navigate("Plant Addition")} // Navigate to PlantAdditionScreen
-      >
-        Add a Plant
-      </Button>
       <Button
         mode="contained"
         style={styles.button}
@@ -70,6 +94,13 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 12,
+    padding: 8,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    marginTop: 8,
+    borderRadius: 8,
   },
   emptyMessage: {
     textAlign: 'center',

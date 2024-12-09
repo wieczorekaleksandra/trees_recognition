@@ -1,16 +1,16 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
-import {url} from './Constants'
+import { Button, StyleSheet, Text, TouchableOpacity, View, Modal, Image, Alert } from 'react-native';
+import { url } from './Constants'; // Ensure the correct API URL
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CameraComponent() {
   const {facing, setFacing} = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
-  
+
   const [modalVisible, setModalVisible] = useState(false);
-  const [flowerDict, setFlowerDict] = useState({});
+  const [flowerDict, setFlowerDict] = useState([]); // Ensuring flowerDict is an array
 
   if (!permission) {
     return <View />;
@@ -18,8 +18,8 @@ export default function CameraComponent() {
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync({base64:true});
-      handleImageUpload(photo.base64)
+      const photo = await cameraRef.current.takePictureAsync({ base64: true });
+      handleImageUpload(photo.base64);
     }
   };
 
@@ -44,15 +44,15 @@ export default function CameraComponent() {
 
       if (response.ok) {
         const result = await response.json();
-        // Extract confidence and name from response
-        const recognized = result['recognized'][0];
-        const confidence = recognized[0];
-        const name = recognized[1];
 
-        // Update flowerDict with the new entry
-        const newFlowerDict = { ...flowerDict, [name]: confidence };
-        setFlowerDict(newFlowerDict);
-        setModalVisible(true);
+          const recognized = result["results"]; 
+          const newFlowerDict = recognized.map((item) => ({
+            name: item["plant_name"],       // Flower name (at index 1)
+            image: item["image_base64"],      // Base64 image data (at index 2)
+          }));
+          console.log(recognized)
+          setFlowerDict(newFlowerDict);
+          setModalVisible(true);
       } else {
         console.error('Image upload failed:', response.statusText);
       }
@@ -61,6 +61,9 @@ export default function CameraComponent() {
     }
   };
   
+  
+
+
 
   if (!permission.granted) {
     return (
@@ -78,31 +81,40 @@ export default function CameraComponent() {
           <TouchableOpacity onPress={takePicture} style={styles.captureButton} />
         </View>
       </CameraView>
-      
+
       <Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => setModalVisible(false)}
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalTitle}>Response Data</Text>
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Recognized Plants</Text>
 
-      {/* Loop through flowerDict and display each flower with its confidence */}
-      {Object.entries(flowerDict).map(([name, confidence], index) => (
-        <View key={index} style={styles.resultItem}>
-          <Text style={styles.resultText}>Flower: {name}</Text>
-          <Text style={styles.resultText}>Confidence: {confidence}</Text>
+            {/* Loop through flowerDict and display each plant with its confidence and image */}
+            {flowerDict.map((flower, index) => (
+              <View key={index} style={styles.resultItem}>
+                <Text style={styles.resultText}>Flower: {flower.name}</Text>
+                {flower.image ? (
+                  <Image
+                    source={{ uri: `data:image/jpeg;base64,${flower.image}` }}
+                    style={styles.resultImage}
+                  />
+                ) : null}
+              </View>
+            ))}
+
+            <Button
+              title="Close"
+              onPress={() => {
+                setModalVisible(false);
+                setFlowerDict([]); // Reset flowerDict when closing modal
+              }}
+            />
+          </View>
         </View>
-      ))}
-
-      <Button title="Close" onPress={() => {setModalVisible(false)
-        setFlowerDict({})
-      }} />
-    </View>
-  </View>
-</Modal>
+      </Modal>
     </View>
   );
 }
@@ -147,5 +159,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  resultItem: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  resultText: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  resultImage: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+    borderRadius: 10,
   },
 });

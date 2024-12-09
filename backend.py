@@ -78,12 +78,47 @@ def upload_image():
         # Get the current user from the JWT
         current_user = get_jwt_identity()
 
+        # Decode the image from Base64
         image_byte = base64.b64decode(data['image'])
         image_final = Image.open(BytesIO(image_byte))
-        recognized = process_image(image_final)
+
+        # Process the image to recognize the plant
+        recognized = process_image(image_final)  # Expected to return a list of results
+
+        if not recognized or not isinstance(recognized, list):
+            return jsonify({"error": "Recognition failed or unexpected format"}), 400
+
+        results = []  # Prepare a list to store results for each recognized plant
+
+        for item in recognized:
+            if len(item) < 3:
+                continue  # Skip if the item does not have enough data
+            
+            plant_id = item[2]  # Assuming the plant ID is at index 2
+            image_path = os.path.join(PLANTS_DIR, f"{plant_id}.jpg")
+
+            # Encode the image as Base64 if the file exists
+            if os.path.exists(image_path):
+                with open(image_path, "rb") as img_file:
+                    image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+            else:
+                image_base64 = None  # No image found for this plant ID
+
+            # Append the result
+            results.append({
+                "plant_name": item[1],  # Include the recognized data
+                "image_base64": image_base64  # Add the Base64 encoded image
+            })
+
+        if not results:
+            return jsonify({"error": "No valid plants recognized or images found"}), 404
 
         print(f"User: {current_user} - Recognized: {recognized}")
-        return jsonify({"recognized": recognized}), 200
+        return jsonify({"results": results}), 200  # Return all results as a JSON array
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
