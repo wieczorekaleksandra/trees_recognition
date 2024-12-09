@@ -3,3 +3,4 @@
 ./plantnet_300K
 __pycache__/resnet_usage.cpython-312.pyc
 plants/
+/venv
