@@ -18,7 +18,7 @@ DATABASE = 'flowers.db'
 PLANTS_DIR = 'plants'  
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -38,10 +38,18 @@ def register():
         cursor = conn.cursor()
         cursor.execute('INSERT INTO users (email, password) VALUES (?, ?)', (email, hashed_password))
         conn.commit()
-        conn.close()
         return jsonify({"message": "User registered successfully"}), 201
     except sqlite3.IntegrityError:
+        # This handles cases where the email already exists in the database
         return jsonify({"error": "User already exists"}), 400
+    except Exception as e:
+        # General error handling (e.g., for database lock or connection issues)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        # Ensure the connection is closed regardless of success or failure
+        if conn:
+            conn.close()
+
 
 
 @app.route('/login', methods=['POST'])
@@ -158,4 +166,4 @@ def get_all_plants():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
