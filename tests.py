@@ -10,14 +10,14 @@ import requests  # Import the requests module for server-based testing
 class FlaskAppTestCase(unittest.TestCase):
 
     def setUp(self):
-        # Server IP where the Flask app is hosted
-        self.server_url = "http://127.0.0.1:8080"
+        # Change to server url in future 
+        self.server_url = "https://flask-app-358350046745.europe-central2.run.app/"
         self.test_user = {
-            "email": "user",
+            "email": "userabcd",
             "password": "testpassword123"
         }
         self.test_user1 = {
-            "email": "user1",
+            "email": "user1asd",
             "password": "testpassword123"
         }
 
