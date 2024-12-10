@@ -1,1 +1,1 @@
-export const url = 'http://192.168.8.103:5000';
+export const url = 'https://flask-app-358350046745.europe-central2.run.app';

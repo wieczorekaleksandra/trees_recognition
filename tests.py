@@ -5,7 +5,7 @@ from io import BytesIO
 from PIL import Image
 import base64
 import time
-import requests  # Import the requests module for server-based testing
+import requests  
 
 class FlaskAppTestCase(unittest.TestCase):
 
@@ -47,14 +47,13 @@ class FlaskAppTestCase(unittest.TestCase):
         login_response = requests.post(f'{self.server_url}/login', json=self.test_user)
         token = login_response.json()['access_token']
 
-        # Prepare sample image as base64
-        image = Image.new('RGB', (100, 100), color='blue')
-        img_byte_arr = BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
+        flower_image_path = '1355932.jpg'  
+        with open(flower_image_path, 'rb') as img_file:
+            img_byte_arr = img_file.read()
+
+        
         encoded_image = base64.b64encode(img_byte_arr).decode('utf-8')
 
-        # Test image upload
         headers = {'Authorization': f'Bearer {token}'}
         response = requests.post(f'{self.server_url}/upload-image', json={'image': encoded_image}, headers=headers)
         self.assertEqual(response.status_code, 200)
