@@ -49,6 +49,7 @@ export default function CameraComponent() {
           const newFlowerDict = recognized.map((item) => ({
             name: item["plant_name"],       // Flower name (at index 1)
             image: item["image_base64"],      // Base64 image data (at index 2)
+            certainty: item["certainty"]    // certainty of the prediction
           }));
           console.log(recognized)
           setFlowerDict(newFlowerDict);
@@ -93,8 +94,11 @@ export default function CameraComponent() {
             <Text style={styles.modalTitle}>Recognized Plants</Text>
 
             {/* Loop through flowerDict and display each plant with its confidence and image */}
-            {flowerDict.map((flower, index) => (
+          {flowerDict
+            .filter(flower => flower.certainty > 0.5)
+            .map((flower, index) => (
               <View key={index} style={styles.resultItem}>
+                <Text style={styles.resultText}>Confidence: {flower.certainty}</Text>
                 <Text style={styles.resultText}>Flower: {flower.name}</Text>
                 {flower.image ? (
                   <Image
@@ -104,7 +108,6 @@ export default function CameraComponent() {
                 ) : null}
               </View>
             ))}
-
             <Button
               title="Close"
               onPress={() => {
