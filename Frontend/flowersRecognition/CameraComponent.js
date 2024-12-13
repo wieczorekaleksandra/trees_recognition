@@ -95,7 +95,7 @@ export default function CameraComponent() {
 
             {/* Loop through flowerDict and display each plant with its confidence and image */}
           {flowerDict
-            .filter(flower => flower.certainty > 0.5)
+            .filter(flower => Number(flower.certainty) > 0.3)
             .map((flower, index) => (
               <View key={index} style={styles.resultItem}>
                 <Text style={styles.resultText}>Confidence: {flower.certainty}</Text>
