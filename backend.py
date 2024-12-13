@@ -115,6 +115,7 @@ def upload_image():
             # Append the result
             results.append({
                 "plant_name": item[1],  # Include the recognized data
+                "certainty" : item[0],# certainty 
                 "image_base64": image_base64  # Add the Base64 encoded image
             })
 

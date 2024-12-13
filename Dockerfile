@@ -13,6 +13,11 @@ RUN apt-get update && apt-get install -y \
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# Create the cache directory
+RUN mkdir -p /root/.cache/torch/hub/checkpoints
+
+# Copy the checkpoint into the container
+COPY resnet152-f82ba261.pth /root/.cache/torch/hub/checkpoints/resnet152-f82ba261.pth
 
 # Set the working directory
 WORKDIR /app
