@@ -5,7 +5,7 @@ import { url } from './Constants'; // Ensure the correct API URL
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CameraComponent() {
-  const {facing, setFacing} = useState<CameraType>('back');
+  const { facing, setFacing } = useState < CameraType > ('back');
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
 
@@ -45,15 +45,15 @@ export default function CameraComponent() {
       if (response.ok) {
         const result = await response.json();
 
-          const recognized = result["results"]; 
-          const newFlowerDict = recognized.map((item) => ({
-            name: item["plant_name"],       // Flower name (at index 1)
-            image: item["image_base64"],      // Base64 image data (at index 2)
-            certainty: item["certainty"]    // certainty of the prediction
-          }));
-          console.log(recognized)
-          setFlowerDict(newFlowerDict);
-          setModalVisible(true);
+        const recognized = result["results"];
+        const newFlowerDict = recognized.map((item) => ({
+          name: item["plant_name"],       // Flower name (at index 1)
+          image: item["image_base64"],      // Base64 image data (at index 2)
+          certainty: item["certainty"]    // certainty of the prediction
+        }));
+        console.log(recognized)
+        setFlowerDict(newFlowerDict);
+        setModalVisible(true);
       } else {
         console.error('Image upload failed:', response.statusText);
       }
@@ -61,8 +61,8 @@ export default function CameraComponent() {
       console.error('Error uploading image:', error);
     }
   };
-  
-  
+
+
 
 
 
@@ -92,27 +92,30 @@ export default function CameraComponent() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Recognized Plants</Text>
+            {flowerDict.filter(flower => Number(flower.certainty) > 0.3).length > 0 ? (
+              flowerDict
+                .filter(flower => Number(flower.certainty) > 0.3)
+                .map((flower, index) => (
+                  <View key={index} style={styles.resultItem}>
+                    <Text style={styles.resultText}>Confidence: {flower.certainty}</Text>
+                    <Text style={styles.resultText}>Flower: {flower.name}</Text>
+                    {flower.image ? (
+                      <Image
+                        source={{ uri: `data:image/jpeg;base64,${flower.image}` }}
+                        style={styles.resultImage}
+                      />
+                    ) : null}
+                  </View>
+                ))
+            ) : (
+              <Text style={styles.noMatchesText}>No matches found</Text> 
+            )}
 
-            {/* Loop through flowerDict and display each plant with its confidence and image */}
-          {flowerDict
-            .filter(flower => Number(flower.certainty) > 0.3)
-            .map((flower, index) => (
-              <View key={index} style={styles.resultItem}>
-                <Text style={styles.resultText}>Confidence: {flower.certainty}</Text>
-                <Text style={styles.resultText}>Flower: {flower.name}</Text>
-                {flower.image ? (
-                  <Image
-                    source={{ uri: `data:image/jpeg;base64,${flower.image}` }}
-                    style={styles.resultImage}
-                  />
-                ) : null}
-              </View>
-            ))}
             <Button
               title="Close"
               onPress={() => {
                 setModalVisible(false);
-                setFlowerDict([]); // Reset flowerDict when closing modal
+                setFlowerDict([]); 
               }}
             />
           </View>
@@ -176,5 +179,11 @@ const styles = StyleSheet.create({
     height: 100,
     marginTop: 10,
     borderRadius: 10,
+  },
+  noMatchesText: {
+    fontSize: 16,
+    color: 'gray',
+    marginVertical: 20,
+    textAlign: 'center',
   },
 });

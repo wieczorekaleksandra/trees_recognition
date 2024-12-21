@@ -44,7 +44,7 @@ export default function Register({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView  style={styles.container}>
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.title}>Register</Text>
@@ -88,7 +88,7 @@ export default function Register({ navigation }) {
           </Button>
         </Card.Content>
       </Card>
-    </View>
+    </ScrollView >
   );
 }
 

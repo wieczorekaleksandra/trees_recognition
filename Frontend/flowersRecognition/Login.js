@@ -38,7 +38,7 @@ export default function Login({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView  style={styles.container}>
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.title}>Login</Text>
@@ -70,7 +70,7 @@ export default function Login({ navigation }) {
           </Button>
         </Card.Content>
       </Card>
-    </View>
+    </ScrollView >
   );
 }
 
